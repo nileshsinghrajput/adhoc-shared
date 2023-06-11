@@ -1,0 +1,526 @@
+{
+    "AWSTemplateFormatVersion" : "2010-09-09",
+  
+    "Description" : "The initial architecture for Web Application",
+  
+    "Parameters" : {
+      "KeyName": {
+        "Description" : "Name of an existing EC2 KeyPair to enable SSH access to the instances",
+        "Type": "AWS::EC2::KeyPair::KeyName",
+        "ConstraintDescription" : "must be the name of an existing EC2 KeyPair."
+      },
+    
+      "WebServerCapacity": {
+        "Default": "1",
+        "Description" : "The initial number of WebServer instances",
+        "Type": "Number",
+        "MinValue": "1",
+        "MaxValue": "5",
+        "ConstraintDescription" : "must be between 1 and 5 EC2 instances."
+      },
+
+      "InstanceType" : {
+        "Description" : "WebServer EC2 instance type",
+        "Type" : "String",
+        "Default" : "t2.micro",
+        "AllowedValues" : [ "t1.micro", "t2.nano", "t2.micro", "t2.small", "t2.medium", "t2.large", "m1.small", "m1.medium", "m1.large", "m1.xlarge", "m2.xlarge", "m2.2xlarge", "m2.4xlarge", "m3.medium", "m3.large", "m3.xlarge", "m3.2xlarge", "m4.large", "m4.xlarge", "m4.2xlarge", "m4.4xlarge", "m4.10xlarge", "c1.medium", "c1.xlarge", "c3.large", "c3.xlarge", "c3.2xlarge", "c3.4xlarge", "c3.8xlarge", "c4.large", "c4.xlarge", "c4.2xlarge", "c4.4xlarge", "c4.8xlarge", "g2.2xlarge", "g2.8xlarge", "r3.large", "r3.xlarge", "r3.2xlarge", "r3.4xlarge", "r3.8xlarge", "i2.xlarge", "i2.2xlarge", "i2.4xlarge", "i2.8xlarge", "d2.xlarge", "d2.2xlarge", "d2.4xlarge", "d2.8xlarge", "hi1.4xlarge", "hs1.8xlarge", "cr1.8xlarge", "cc2.8xlarge", "cg1.4xlarge"]
+  ,
+        "ConstraintDescription" : "must be a valid EC2 instance type."
+      }
+    },
+  
+    "Mappings" : {
+      "AWSInstanceType2Arch" : {
+        "t1.micro"    : { "Arch" : "HVM64"  },
+        "t2.nano"     : { "Arch" : "HVM64"  },
+        "t2.micro"    : { "Arch" : "HVM64"  },
+        "t2.small"    : { "Arch" : "HVM64"  },
+        "t2.medium"   : { "Arch" : "HVM64"  },
+        "t2.large"    : { "Arch" : "HVM64"  },
+        "m1.small"    : { "Arch" : "HVM64"  },
+        "m1.medium"   : { "Arch" : "HVM64"  },
+        "m1.large"    : { "Arch" : "HVM64"  },
+        "m1.xlarge"   : { "Arch" : "HVM64"  },
+        "m2.xlarge"   : { "Arch" : "HVM64"  },
+        "m2.2xlarge"  : { "Arch" : "HVM64"  },
+        "m2.4xlarge"  : { "Arch" : "HVM64"  },
+        "m3.medium"   : { "Arch" : "HVM64"  },
+        "m3.large"    : { "Arch" : "HVM64"  },
+        "m3.xlarge"   : { "Arch" : "HVM64"  },
+        "m3.2xlarge"  : { "Arch" : "HVM64"  },
+        "m4.large"    : { "Arch" : "HVM64"  },
+        "m4.xlarge"   : { "Arch" : "HVM64"  },
+        "m4.2xlarge"  : { "Arch" : "HVM64"  },
+        "m4.4xlarge"  : { "Arch" : "HVM64"  },
+        "m4.10xlarge" : { "Arch" : "HVM64"  },
+        "c1.medium"   : { "Arch" : "HVM64"  },
+        "c1.xlarge"   : { "Arch" : "HVM64"  },
+        "c3.large"    : { "Arch" : "HVM64"  },
+        "c3.xlarge"   : { "Arch" : "HVM64"  },
+        "c3.2xlarge"  : { "Arch" : "HVM64"  },
+        "c3.4xlarge"  : { "Arch" : "HVM64"  },
+        "c3.8xlarge"  : { "Arch" : "HVM64"  },
+        "c4.large"    : { "Arch" : "HVM64"  },
+        "c4.xlarge"   : { "Arch" : "HVM64"  },
+        "c4.2xlarge"  : { "Arch" : "HVM64"  },
+        "c4.4xlarge"  : { "Arch" : "HVM64"  },
+        "c4.8xlarge"  : { "Arch" : "HVM64"  },
+        "g2.2xlarge"  : { "Arch" : "HVMG2"  },
+        "g2.8xlarge"  : { "Arch" : "HVMG2"  },
+        "r3.large"    : { "Arch" : "HVM64"  },
+        "r3.xlarge"   : { "Arch" : "HVM64"  },
+        "r3.2xlarge"  : { "Arch" : "HVM64"  },
+        "r3.4xlarge"  : { "Arch" : "HVM64"  },
+        "r3.8xlarge"  : { "Arch" : "HVM64"  },
+        "i2.xlarge"   : { "Arch" : "HVM64"  },
+        "i2.2xlarge"  : { "Arch" : "HVM64"  },
+        "i2.4xlarge"  : { "Arch" : "HVM64"  },
+        "i2.8xlarge"  : { "Arch" : "HVM64"  },
+        "d2.xlarge"   : { "Arch" : "HVM64"  },
+        "d2.2xlarge"  : { "Arch" : "HVM64"  },
+        "d2.4xlarge"  : { "Arch" : "HVM64"  },
+        "d2.8xlarge"  : { "Arch" : "HVM64"  },
+        "hi1.4xlarge" : { "Arch" : "HVM64"  },
+        "hs1.8xlarge" : { "Arch" : "HVM64"  },
+        "cr1.8xlarge" : { "Arch" : "HVM64"  },
+        "cc2.8xlarge" : { "Arch" : "HVM64"  }
+      },
+  
+      "AWSInstanceType2NATArch" : {
+        "t1.micro"    : { "Arch" : "NATHVM64"  },
+        "t2.nano"     : { "Arch" : "NATHVM64"  },
+        "t2.micro"    : { "Arch" : "NATHVM64"  },
+        "t2.small"    : { "Arch" : "NATHVM64"  },
+        "t2.medium"   : { "Arch" : "NATHVM64"  },
+        "t2.large"    : { "Arch" : "NATHVM64"  },
+        "m1.small"    : { "Arch" : "NATHVM64"  },
+        "m1.medium"   : { "Arch" : "NATHVM64"  },
+        "m1.large"    : { "Arch" : "NATHVM64"  },
+        "m1.xlarge"   : { "Arch" : "NATHVM64"  },
+        "m2.xlarge"   : { "Arch" : "NATHVM64"  },
+        "m2.2xlarge"  : { "Arch" : "NATHVM64"  },
+        "m2.4xlarge"  : { "Arch" : "NATHVM64"  },
+        "m3.medium"   : { "Arch" : "NATHVM64"  },
+        "m3.large"    : { "Arch" : "NATHVM64"  },
+        "m3.xlarge"   : { "Arch" : "NATHVM64"  },
+        "m3.2xlarge"  : { "Arch" : "NATHVM64"  },
+        "m4.large"    : { "Arch" : "NATHVM64"  },
+        "m4.xlarge"   : { "Arch" : "NATHVM64"  },
+        "m4.2xlarge"  : { "Arch" : "NATHVM64"  },
+        "m4.4xlarge"  : { "Arch" : "NATHVM64"  },
+        "m4.10xlarge" : { "Arch" : "NATHVM64"  },
+        "c1.medium"   : { "Arch" : "NATHVM64"  },
+        "c1.xlarge"   : { "Arch" : "NATHVM64"  },
+        "c3.large"    : { "Arch" : "NATHVM64"  },
+        "c3.xlarge"   : { "Arch" : "NATHVM64"  },
+        "c3.2xlarge"  : { "Arch" : "NATHVM64"  },
+        "c3.4xlarge"  : { "Arch" : "NATHVM64"  },
+        "c3.8xlarge"  : { "Arch" : "NATHVM64"  },
+        "c4.large"    : { "Arch" : "NATHVM64"  },
+        "c4.xlarge"   : { "Arch" : "NATHVM64"  },
+        "c4.2xlarge"  : { "Arch" : "NATHVM64"  },
+        "c4.4xlarge"  : { "Arch" : "NATHVM64"  },
+        "c4.8xlarge"  : { "Arch" : "NATHVM64"  },
+        "g2.2xlarge"  : { "Arch" : "NATHVMG2"  },
+        "g2.8xlarge"  : { "Arch" : "NATHVMG2"  },
+        "r3.large"    : { "Arch" : "NATHVM64"  },
+        "r3.xlarge"   : { "Arch" : "NATHVM64"  },
+        "r3.2xlarge"  : { "Arch" : "NATHVM64"  },
+        "r3.4xlarge"  : { "Arch" : "NATHVM64"  },
+        "r3.8xlarge"  : { "Arch" : "NATHVM64"  },
+        "i2.xlarge"   : { "Arch" : "NATHVM64"  },
+        "i2.2xlarge"  : { "Arch" : "NATHVM64"  },
+        "i2.4xlarge"  : { "Arch" : "NATHVM64"  },
+        "i2.8xlarge"  : { "Arch" : "NATHVM64"  },
+        "d2.xlarge"   : { "Arch" : "NATHVM64"  },
+        "d2.2xlarge"  : { "Arch" : "NATHVM64"  },
+        "d2.4xlarge"  : { "Arch" : "NATHVM64"  },
+        "d2.8xlarge"  : { "Arch" : "NATHVM64"  },
+        "hi1.4xlarge" : { "Arch" : "NATHVM64"  },
+        "hs1.8xlarge" : { "Arch" : "NATHVM64"  },
+        "cr1.8xlarge" : { "Arch" : "NATHVM64"  },
+        "cc2.8xlarge" : { "Arch" : "NATHVM64"  }
+      }
+  ,
+      "AWSRegionArch2AMI" : {
+        "af-south-1"       : {"HVM64" : "ami-064cc455f8a1ef504", "HVMG2" : "NOT_SUPPORTED"},
+        "ap-east-1"        : {"HVM64" : "ami-f85b1989", "HVMG2" : "NOT_SUPPORTED"},
+        "ap-northeast-1"   : {"HVM64" : "ami-0b2c2a754d5b4da22", "HVMG2" : "ami-09d0e0e099ecabba2"},
+        "ap-northeast-2"   : {"HVM64" : "ami-0493ab99920f410fc", "HVMG2" : "NOT_SUPPORTED"},
+        "ap-northeast-3"   : {"HVM64" : "ami-01344f6f63a4decc1", "HVMG2" : "NOT_SUPPORTED"},
+        "ap-south-1"       : {"HVM64" : "ami-03cfb5e1fb4fac428", "HVMG2" : "ami-0244c1d42815af84a"},
+        "ap-southeast-1"   : {"HVM64" : "ami-0ba35dc9caf73d1c7", "HVMG2" : "ami-0e46ce0d6a87dc979"},
+        "ap-southeast-2"   : {"HVM64" : "ami-0ae99b503e8694028", "HVMG2" : "ami-0c0ab057a101d8ff2"},
+        "ca-central-1"     : {"HVM64" : "ami-0803e21a2ec22f953", "HVMG2" : "NOT_SUPPORTED"},
+        "cn-north-1"       : {"HVM64" : "ami-07a3f215cc90c889c", "HVMG2" : "NOT_SUPPORTED"},
+        "cn-northwest-1"   : {"HVM64" : "ami-0a3b3b10f714a0ff4", "HVMG2" : "NOT_SUPPORTED"},
+        "eu-central-1"     : {"HVM64" : "ami-0474863011a7d1541", "HVMG2" : "ami-0aa1822e3eb913a11"},
+        "eu-north-1"       : {"HVM64" : "ami-0de4b8910494dba0f", "HVMG2" : "ami-32d55b4c"},
+        "eu-south-1"       : {"HVM64" : "ami-08427144fe9ebdef6", "HVMG2" : "NOT_SUPPORTED"},
+        "eu-west-1"        : {"HVM64" : "ami-015232c01a82b847b", "HVMG2" : "ami-0d5299b1c6112c3c7"},
+        "eu-west-2"        : {"HVM64" : "ami-0765d48d7e15beb93", "HVMG2" : "NOT_SUPPORTED"},
+        "eu-west-3"        : {"HVM64" : "ami-0caf07637eda19d9c", "HVMG2" : "NOT_SUPPORTED"},
+        "me-south-1"       : {"HVM64" : "ami-0744743d80915b497", "HVMG2" : "NOT_SUPPORTED"},
+        "sa-east-1"        : {"HVM64" : "ami-0a52e8a6018e92bb0", "HVMG2" : "NOT_SUPPORTED"},
+        "us-east-1"        : {"HVM64" : "ami-032930428bf1abbff", "HVMG2" : "ami-0aeb704d503081ea6"},
+        "us-east-2"        : {"HVM64" : "ami-027cab9a7bf0155df", "HVMG2" : "NOT_SUPPORTED"},
+        "us-west-1"        : {"HVM64" : "ami-088c153f74339f34c", "HVMG2" : "ami-0a7fc72dc0e51aa77"},
+        "us-west-2"        : {"HVM64" : "ami-01fee56b22f308154", "HVMG2" : "ami-0fe84a5b4563d8f27"}
+      }
+  
+    },
+  
+    "Resources" : {
+
+        "AppVPC" : {
+            "Type" : "AWS::EC2::VPC",
+            "Properties" : {
+               "CidrBlock" : "10.198.1.0/24",
+               "EnableDnsSupport" : "true",
+               "EnableDnsHostnames" : "true",
+               "Tags" : [ 
+                  {"Key" : "stack", "Value" : "Non-Production"} 
+               ]
+            }
+         },  
+
+         "PrivateSubnetA" : {
+            "Type" : "AWS::EC2::Subnet",
+            "Properties" : {
+               "VpcId" : { "Ref" : "AppVPC" },
+               "CidrBlock" : "10.198.1.0/27",
+               "AvailabilityZone" : {
+                "Fn::Select" : [ 
+                  0, 
+                  { 
+                    "Fn::GetAZs" : "" 
+                  } 
+                ]
+              },
+               "Tags" : [ { "Key" : "stack", "Value" : "Non-Production" } ]
+            }
+         },
+
+         "PrivateSubnetB" : {
+            "Type" : "AWS::EC2::Subnet",
+            "Properties" : {
+               "VpcId" : { "Ref" : "AppVPC" },
+               "CidrBlock" : "10.198.1.32/27",
+               "AvailabilityZone" : {
+                "Fn::Select" : [ 
+                  1, 
+                  { 
+                    "Fn::GetAZs" : "" 
+                  } 
+                ]
+              },
+               "Tags" : [ { "Key" : "stack", "Value" : "Non-Production" } ]
+            }
+         },
+
+         "PublicSubnetA" : {
+            "Type" : "AWS::EC2::Subnet",
+            "Properties" : {
+               "VpcId" : { "Ref" : "AppVPC" },
+               "CidrBlock" : "10.198.1.64/27",
+               "AvailabilityZone" : {
+                "Fn::Select" : [ 
+                  0, 
+                  { 
+                    "Fn::GetAZs" : "" 
+                  } 
+                ]
+              },
+               "Tags" : [ { "Key" : "stack", "Value" : "Non-Production" } ]
+            }
+         },
+ 
+         "PublicSubnetB" : {
+            "Type" : "AWS::EC2::Subnet",
+            "Properties" : {
+               "VpcId" : { "Ref" : "AppVPC" },
+               "CidrBlock" : "10.198.1.96/27",
+               "AvailabilityZone" : {
+                "Fn::Select" : [ 
+                  1, 
+                  { 
+                    "Fn::GetAZs" : "" 
+                  } 
+                ]
+              },
+               "Tags" : [ { "Key" : "stack", "Value" : "Non-Production" } ]
+            }
+         },
+
+      "InternetGateway" : {
+        "Type" : "AWS::EC2::InternetGateway",
+        "Properties" : {
+            "Tags" : [ {"Key" : "stack", "Value" : "Non-Production"}]
+        }
+        },
+
+        "NATGateway" : {
+            "Type" : "AWS::EC2::NatGateway",
+            "Properties" : {
+               "AllocationId" : { 
+                   "Fn::GetAtt" : ["NATGatewayEIP", "AllocationId"] 
+               },
+               "SubnetId" : { 
+                   "Ref" : "PublicSubnetA" 
+               },
+               "Tags" : [ 
+                   {"Key" : "stack", "Value" : "Non-Production" } 
+               ]
+              }
+         },
+         
+         "NATGatewayEIP" : {
+            "Type" : "AWS::EC2::EIP",
+            "Properties" : {
+               "Domain" : "vpc"
+            }
+         },
+
+         "RTPublicSubnet" : {
+            "Type" : "AWS::EC2::RouteTable",
+            "Properties" : {
+               "VpcId" : { "Ref" : "AppVPC" },
+               "Tags" : [ { "Key" : "stack", "Value" : "Non-Production" } ]
+            }
+         },
+
+         "RouteInternetGateway" : {
+            "DependsOn": [ "InternetGateway" ],
+            "Type" : "AWS::EC2::Route",
+            "Properties" : {
+               "RouteTableId" : { "Ref" : "RTPublicSubnet" },
+               "DestinationCidrBlock" : "0.0.0.0/0",
+               "GatewayId" : { "Ref" : "InternetGateway" }
+            }
+         },
+
+         "PublicASubnetRouteTableAssociation" : {
+            "Type" : "AWS::EC2::SubnetRouteTableAssociation",
+            "Properties" : {
+            "SubnetId" : { "Ref" : "PublicSubnetA" },
+            "RouteTableId" : { "Ref" : "RTPublicSubnet" }
+            }
+        },
+
+        "PublicBSubnetRouteTableAssociation" : {
+            "Type" : "AWS::EC2::SubnetRouteTableAssociation",
+            "Properties" : {
+            "SubnetId" : { "Ref" : "PublicSubnetB" },
+            "RouteTableId" : { "Ref" : "RTPublicSubnet" }
+            }
+        },
+
+         "RTPrivateSubnet" : {
+            "Type" : "AWS::EC2::RouteTable",
+            "Properties" : {
+               "VpcId" : { "Ref" : "AppVPC" },
+               "Tags" : [ { "Key" : "stack", "Value" : "Non-Production" } ]
+            }
+         },
+         
+         "RouteNATGateway" : {
+            "DependsOn": [ "NATGateway" ],
+            "Type" : "AWS::EC2::Route",
+            "Properties" : {
+               "RouteTableId" : { "Ref" : "RTPrivateSubnet" },
+               "DestinationCidrBlock" : "0.0.0.0/0",
+               "NatGatewayId" : { "Ref" : "NATGateway" }
+            }
+         },
+
+        "PrivateASubnetRouteTableAssociation" : {
+            "Type" : "AWS::EC2::SubnetRouteTableAssociation",
+            "Properties" : {
+            "SubnetId" : { "Ref" : "PrivateSubnetA" },
+            "RouteTableId" : { "Ref" : "RTPrivateSubnet" }
+            }
+        },
+
+        "PrivateBSubnetRouteTableAssociation" : {
+            "Type" : "AWS::EC2::SubnetRouteTableAssociation",
+            "Properties" : {
+            "SubnetId" : { "Ref" : "PrivateSubnetB" },
+            "RouteTableId" : { "Ref" : "RTPrivateSubnet" }
+            }
+        },
+
+      "AttachGateway" : {
+            "Type" : "AWS::EC2::VPCGatewayAttachment",
+            "Properties" : {
+               "VpcId" : { "Ref" : "AppVPC" },
+               "InternetGatewayId" : { "Ref" : "InternetGateway" }
+             }
+         },
+
+      "LoadBalancerSecurityGroup" : {
+            "Type" : "AWS::EC2::SecurityGroup",
+            "Properties" : {
+                "GroupDescription" : "Allow http to load Balancer",
+                "VpcId" : {"Ref" : "AppVPC"},
+                "SecurityGroupIngress" : [{
+                    "IpProtocol" : "tcp",
+                    "FromPort" : 80,
+                    "ToPort" : 80,
+                    "CidrIp" : "0.0.0.0/0"
+                }],
+                "SecurityGroupEgress" : [{
+                    "IpProtocol" : "tcp",
+                    "FromPort" : 80,
+                    "ToPort" : 80,
+                    "CidrIp" : "0.0.0.0/0"
+                }]
+            }
+        },
+
+      "ApplicationLoadBalancer" : {
+        "Type" : "AWS::ElasticLoadBalancingV2::LoadBalancer",
+        "Properties" : {
+          "Subnets" : [{ "Ref" : "PublicSubnetA"},{"Ref" : "PublicSubnetB"}],
+          "SecurityGroups" : [ { "Ref" : "LoadBalancerSecurityGroup" } ]
+        }
+      },
+  
+      "ALBListener" : {
+        "Type" : "AWS::ElasticLoadBalancingV2::Listener",
+        "Properties" : {
+          "DefaultActions" : [{
+            "Type" : "forward",
+            "TargetGroupArn" : { "Ref" : "ALBTargetGroup" }
+          }],
+          "LoadBalancerArn" : { "Ref" : "ApplicationLoadBalancer" },
+          "Port" : "80",
+          "Protocol" : "HTTP"
+        }
+      },
+  
+      "ALBTargetGroup" : {
+        "Type" : "AWS::ElasticLoadBalancingV2::TargetGroup",
+        "Properties" : {
+          "HealthCheckIntervalSeconds" : 10,
+          "HealthCheckTimeoutSeconds" : 5,
+          "HealthyThresholdCount" : 2,
+          "Port" : 80,
+          "Protocol" : "HTTP",
+          "UnhealthyThresholdCount" : 5,
+          "VpcId" : {"Ref" : "AppVPC"}
+        }
+      },
+  
+      "WebServerGroup" : {
+        "Type" : "AWS::AutoScaling::AutoScalingGroup",
+        "DependsOn": [ "NATGateway" ],
+        "Properties" : {
+          "VPCZoneIdentifier" : [{ "Ref" : "PrivateSubnetA"},{"Ref" : "PrivateSubnetB"}],
+          "LaunchTemplate": {
+            "LaunchTemplateId": { "Ref": "LaunchTemplate" },
+            "Version": { "Fn::GetAtt": [ "LaunchTemplate", "LatestVersionNumber" ] }
+        },
+          "MinSize" : "1",
+          "MaxSize" : "5",
+          "DesiredCapacity" : { "Ref" : "WebServerCapacity" },
+          "TargetGroupARNs" : [ { "Ref" : "ALBTargetGroup" } ],
+          "Tags" : [
+            {
+              "Key" : "stack",
+              "PropagateAtLaunch" : true,
+              "Value" : "Non-Production"
+            },
+            {
+              "Key" : "Name",
+              "PropagateAtLaunch" : true,
+              "Value" : "Test-WebServer"
+            }
+            ]
+        }
+      },
+ 
+      "LaunchTemplate":{
+        "Type":"AWS::EC2::LaunchTemplate",
+        "Properties":{
+          "LaunchTemplateName":"WebServerLaunchTemplate-0001",
+          "LaunchTemplateData":{
+            "DisableApiTermination":"false",
+            "ImageId":{ "Fn::FindInMap" : [ "AWSRegionArch2AMI", { "Ref" : "AWS::Region" },
+                    { "Fn::FindInMap" : [ "AWSInstanceType2Arch", { "Ref" : "InstanceType" }, "Arch" ] } ] },
+            "InstanceType":{ "Ref" : "InstanceType" },
+            "KeyName":{ "Ref" : "KeyName" },
+            "SecurityGroupIds":[ {"Ref" : "WebServerSecurityGroup"} ],
+            "UserData": {
+                "Fn::Base64": {
+                    "Fn::Join":["", [
+                        "#!/bin/bash \n",
+                        "#The below commented steps are for RHEL \n",
+                        "#yum update -y \n",
+                        "#yum install -y yum-utils \n",
+                        "#yum-config-manager --add-repo https://download.docker.com/linux/centos/docker-ce.repo \n",
+                        "#yum install -y docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin \n",
+                        "#systemctl enable docker \n",
+                        "#systemctl start docker \n",
+                        "#docker run -d -p 80:80 nginx \n",
+                        "\n",
+                        "#The steps are for Amazon Linux \n",
+                        "sudo yum update -y \n",
+                        "sudo yum install -y docker \n",
+                        "sudo usermod -a -G docker ec2-user \n",
+                        "id ec2-user \n",
+                        "sudo touch /tmp/user-data-log.log \n",
+                        "\n",
+                        "# Reload a Linux user's group assignments to docker w/o logout \n",
+                        "sudo newgrp docker \n",
+                        "sudo echo 'Docker installation completed' >> /tmp/user-data-log.log \n",
+                        "\n",
+                        "#Install docker compose \n",
+                        "sudo rm -rf /usr/local/bin/docker-compose \n",
+                        "wget https://github.com/docker/compose/releases/latest/download/docker-compose-$(uname -s)-$(uname -m) \n",
+                        "sudo mv docker-compose-$(uname -s)-$(uname -m) /usr/local/bin/docker-compose \n",
+                        "sudo chmod -v +x /usr/local/bin/docker-compose \n",
+                        "sudo echo 'Step 2: Docker compose installation completed' >> /tmp/user-data-log.log \n",
+                        "\n",
+                        "#Starting the docker service and creating an Apache httpd container \n",
+                        "service docker enable \n",
+                        "service docker start \n",
+                        "container_id=$(sudo docker run -p 80:80 --rm --detach httpd) \n",
+                        "sudo docker exec -d $container_id /bin/sh -c 'apt -y update && apt install -y git && cd /tmp && git clone https://github.com/nileshsinghrajput/adhoc-shared.git && cp -rf adhoc-shared/index.html /usr/local/apache2/htdocs/index.html' \n",
+                        "sudo echo 'Step 3: Finished setting up the reverse proxy and the static site should be up and running now' >> /tmp/user-data-log.log \n",
+                        "\n"
+                    ]
+                ]
+                }
+            }
+          }
+        }
+      },
+  
+      "WebServerSecurityGroup" : {
+        "Type" : "AWS::EC2::SecurityGroup",
+        "Properties" : {
+          "GroupDescription" : "Enable HTTP access via port 80 locked down to the ELB and SSH access",
+          "SecurityGroupIngress" : [ {
+            "IpProtocol" : "tcp",
+            "FromPort" : "80",
+            "ToPort" : "80",
+            "SourceSecurityGroupId" : {"Fn::Select" : [0, {"Fn::GetAtt" : ["ApplicationLoadBalancer", "SecurityGroups"]}]}
+          },
+          {
+            "IpProtocol" : "tcp",
+            "FromPort" : "22",
+            "ToPort" : "22",
+            "CidrIp" : { "Fn::GetAtt" : [ "AppVPC", "CidrBlock" ] }
+          } ],
+          "VpcId" : { "Ref" : "AppVPC" }
+        }
+      }
+    },
+  
+    "Outputs" : {
+      "WebsiteURL" : {
+        "Description" : "URL for newly created LAMP stack",
+        "Value" : { "Fn::Join" : ["", ["http://", { "Fn::GetAtt" : [ "ApplicationLoadBalancer", "DNSName" ]}]] }
+      }
+    }
+  }
