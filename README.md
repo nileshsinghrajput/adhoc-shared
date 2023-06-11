@@ -6,7 +6,7 @@ Pre-requisites: <br />
 2. An active AWS account with access to provision the infrastructure <br />
 
 
-![WebAppHosting-Infrastructure](https://github.com/nileshsinghrajput/adhoc-shared/assets/22197017/dec9c830-2d8d-496f-a619-bfea189da1f0) <br/>
+![WebAppHosting-Infrastructure](https://github.com/nileshsinghrajput/adhoc-shared/blob/a71772aab6a366641132827efd5efbe022932606/WebAppHosting-Infrastructure.jpg) <br/>
 
 
 ### **Miscellaneous:** <br/>
